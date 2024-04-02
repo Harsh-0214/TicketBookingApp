@@ -7,7 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestParam;
 
 // Model Imports:
-import com.ontariotechu.sofe3980U.core.MemoryStore;
+import com.ontariotechu.sofe3980U.core.Memory;
 
 @Controller
 public class BookingViewController {
@@ -15,7 +15,7 @@ public class BookingViewController {
     @GetMapping("/")
     public String home(Model model) {
 
-        MemoryStore memoryStore = MemoryStore.getInstance(); 
+        Memory memoryStore = Memory.getInstance(); 
 
         model.addAttribute("airports", memoryStore.getAirportList()); 
 

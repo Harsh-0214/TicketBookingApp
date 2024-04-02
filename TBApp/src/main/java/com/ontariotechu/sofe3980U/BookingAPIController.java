@@ -24,7 +24,7 @@ import com.ontariotechu.sofe3980U.core.restmodels.FlightSearchDTO;
 
 import com.ontariotechu.sofe3980U.booking.Booking;
 import com.ontariotechu.sofe3980U.booking.BookingSessionWrap;
-import com.ontariotechu.sofe3980U.core.MemoryStore;
+import com.ontariotechu.sofe3980U.core.Memory;
 import com.ontariotechu.sofe3980U.core.PathFinder;
 
 @RestController
@@ -89,7 +89,7 @@ public class BookingAPIController {
 
         // Session Wrapping for JSON and UUID
 
-        MemoryStore memoryStore = MemoryStore.getInstance(); // get singleton inst
+        Memory memoryStore = Memory.getInstance(); // get singleton inst
 
         String sessionID = UUID.randomUUID().toString();
 
@@ -126,7 +126,7 @@ public class BookingAPIController {
             System.out.println("User Name: " + bookingDTO.getUserName());
             System.out.println("Booking UUID: " + bookingDTO.getBookingUUID());
 
-            MemoryStore memoryStore = MemoryStore.getInstance(); // get singleton inst
+            Memory memoryStore = Memory.getInstance(); 
             List<Booking> BBL = memoryStore.getBookingBrowseList(bookingDTO.getUserUUID());
 
             Boolean found = false;
@@ -136,7 +136,7 @@ public class BookingAPIController {
 
                 if (booking.getUUID().equals(bookingDTO.getBookingUUID())) {
 
-                    booking.setNameOfPassenger(bookingDTO.getUserName()); // Set passenger name
+                    booking.setNameOfPassenger(bookingDTO.getUserName());
 
                     memoryStore.addBookingToBookedList(bookingDTO.getUserUUID(), booking);
                     System.out.println("Booking submitted successfully!");
@@ -158,7 +158,7 @@ public class BookingAPIController {
 
     @GetMapping("/my_bookings")
     public ResponseEntity<String> getMyBookings(@RequestParam String userUUID) {
-        MemoryStore memoryStore = MemoryStore.getInstance(); // get singleton inst
+        Memory memoryStore = Memory.getInstance(); // get singleton inst
         List<Booking> BBL = memoryStore.getBookedListByUUID(userUUID);
 
         System.out.println("User UUID: " + userUUID);

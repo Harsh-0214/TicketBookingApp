@@ -6,17 +6,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashSet;
-
-// JUnit Imports
-
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.springframework.test.annotation.Repeat;
 
 public class MemoryStoreTest {
-
     //Airport Tests (Data Integrity Tests)
-
     @Test
     public void testUniqueAirportIDs() {
         List<Airport> airports = MemoryStore.getInstance().getAirportList();
@@ -29,13 +24,9 @@ public class MemoryStoreTest {
             ids.add(airport.getID());
         }
     }
-
     //Flight Network Tests (Data Integrity Tests)
 
-
     //TODO
-
-
 
     //Flight List Sorting Tests (White Box Tests)
 

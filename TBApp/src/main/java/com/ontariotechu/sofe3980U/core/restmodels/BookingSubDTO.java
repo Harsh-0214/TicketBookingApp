@@ -24,7 +24,7 @@ public class BookingSubDTO {
     public String getBookingUUID() {
         return bookingUUID;
     }
-
+    
     public void setBookingUUID(String bookingUUID) {
         this.bookingUUID = bookingUUID;
     }

@@ -2,45 +2,47 @@ package com.ontariotechu.sofe3980U.core;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import com.ontariotechu.sofe3980U.core.restmodels.FlightSearchDTO;
 
-public abstract class Utility {
-    public static LocalDate parseDate(String dateString, String format) {
-        // Create a formatter using the given format
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+public class Utility {
 
-        // Parse the date string into a LocalDate object
+    //Utility method to parse dates from strings
+    public static LocalDate parseDateString(String dateString, String pattern) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
         return LocalDate.parse(dateString, formatter);
     }
 
-    public static int validateRequest(FlightSearchDTO searchParameters) {
+    //Method to validate the search parameters of a flight
+    public static void validateFlightSearch(FlightSearchDTO searchParams) {
+        checkAirportsDifferent(searchParams.getDepartureAirport(), searchParams.getArrivalAirport());
+        checkDatesForRoundTrip(searchParams.isRoundTrip(), searchParams.getDepartureDateParsed(), searchParams.getReturnDateParsed());
+    }
 
-    int departureAirport = searchParameters.getDepartureAirport();
-    int arrivalAirport = searchParameters.getArrivalAirport();
-    boolean roundTrip = searchParameters.getRoundTrip();
-
-    LocalDate departureDate = searchParameters.getDepartureDateParsed();
-    LocalDate returnDate = searchParameters.getReturnDateParsed();
-    
-        // Ensure departure and arrival airports are not the same
+    //ensures departure and arrival airports are not the same
+    private static void checkAirportsDifferent(int departureAirport, int arrivalAirport) {
         if (departureAirport == arrivalAirport) {
-            throw new IllegalArgumentException("Departure airport and arrival airport cannot be the same.");
+            throw new IllegalArgumentException("Departure and arrival airports must be different.");
         }
+    }
 
-        // Ensure departure date is earlier than return date
-        if (roundTrip && (departureDate == null || returnDate == null || departureDate.isAfter(returnDate))) {
-            throw new IllegalArgumentException("Departure date must be earlier than return date for round trips.");
+    // Private method to validate dates based on the trip type
+    private static void checkDatesForRoundTrip(boolean isRoundTrip, LocalDate departureDate, LocalDate returnDate) {
+
+        if (isRoundTrip) {
+            if (departureDate == null || returnDate == null) {
+                throw new IllegalArgumentException("Both departure and return dates must be provided for round trips.");
+            }
+            if (departureDate.isAfter(returnDate)) {
+                throw new IllegalArgumentException("Departure date must be before the return date for round trips.");
+            }
+        } else {
+            // no return date for one-way trips
+            if (returnDate != null) {
+                throw new IllegalArgumentException("Return date must be null for one-way trips.");
+            }
         }
-
-        // If roundTrip is false, return date should be null
-        if (!roundTrip && returnDate != null) {
-            throw new IllegalArgumentException("Return date must be null for one-way trips.");
-        }
-
-        // Add more assertions as needed...
-
-        return 0;
     }
 
 }

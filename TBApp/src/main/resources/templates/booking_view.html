@@ -4,11 +4,8 @@
 <head>
     <title>Flight Booking System</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/css/bootstrap-icons.css">
-    <!-- Bootstrap DatePicker CSS -->
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
 </head>
@@ -22,7 +19,6 @@
 
     .btn-info {
         margin-left: auto;
-        /* This might be optional depending on your setup */
     }
 
     .custom-control-input:checked~.custom-control-label::before {
@@ -33,7 +29,6 @@
 </style>
 
 <body>
-
     <!-- PAGE HEADER -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <a class="navbar-brand" href="#">SOFE 3980U | Ticket Booking Application</a>
@@ -425,9 +420,6 @@
 
                 // -----------------[ CARD BODY ]--------------------
 
-
-
-
                 // Create card body and populate with booking details
                 let cardBody = document.createElement("div");
                 cardBody.classList.add("card-body");
@@ -436,8 +428,6 @@
                 cardTitle.classList.add("card-title");
                 cardTitle.innerHTML = `> Outbound Flight(s): ${booking.verboseOutDateStr}`;
                 cardBody.appendChild(cardTitle);
-
-
 
                 // Append flight details for outbound and inbound (if exists)
                 let cardText = document.createElement("p");

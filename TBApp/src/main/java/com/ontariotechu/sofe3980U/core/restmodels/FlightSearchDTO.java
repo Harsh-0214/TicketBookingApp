@@ -1,23 +1,18 @@
 package com.ontariotechu.sofe3980U.core.restmodels;
 
 import java.time.LocalDate;
-
 import com.ontariotechu.sofe3980U.core.Utility;
 
 public class FlightSearchDTO {
 
     private String dtoUuid;
-
     private String returnDate;
     private String departureDate;
     private Integer departureAirport;
     private Integer arrivalAirport;
     private Boolean roundTrip;
-
-    private LocalDate returnDateParsed;
-    private LocalDate departureDateParsed;
-
-    // -------------- Getters and Setters -------------------
+    
+//Getters and Setters
 
     public String getDtoUuid() {
         return dtoUuid;
@@ -32,7 +27,6 @@ public class FlightSearchDTO {
     }
 
     public void setDepartureDate(String departureDate) {
-        //parseDep(departureDate); DONT UNCOMMENT , THIS BREAKS JSON PARSING
         this.departureDate = departureDate;
     }
 
@@ -65,12 +59,8 @@ public class FlightSearchDTO {
     }
 
     public void setReturnDate(String returnDate) {
-        //parseRet(returnDate); DONT UNCOMMENT , THIS BREAKS JSON PARSING
         this.returnDate = returnDate;
     }
-
-    // ----------------------[ Un-used DTO items ]------------------------
-
     public void parseDep(String departureDate) {
         this.departureDateParsed = Utility.parseDate(departureDate, "MM/dd/yyyy");
     }

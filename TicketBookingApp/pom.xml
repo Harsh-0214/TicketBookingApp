@@ -2,10 +2,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ontariotechu.sofe3980U</groupId>
-  <artifactId>SOFE3980U-Final-Project</artifactId>
+  <artifactId>TicketBookingApp</artifactId>
   <packaging>war</packaging>
   <version>1.0.0</version>
-  <name>SOFE3980U-Final-Project Maven Web App</name>
+  <name>Ticket Booking Maven Web App</name>
   <url>http://maven.apache.org</url>
   <parent>
 	<groupId>org.springframework.boot</groupId>
@@ -41,7 +41,7 @@
 
   </dependencies>
   <build>
-    <finalName>SOFE3980U-Final-Project</finalName>
+    <finalName>TicketBookingApp</finalName>
 	<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -49,7 +49,7 @@
 				<executions>
 					<execution>
 						<configuration>
-							<mainClass>com.ontariotechu.sofe3980U.Application</mainClass>
+							<mainClass>com.ontariotechu.sofe3980U.App</mainClass>
 						</configuration>
 					</execution>
 				</executions>

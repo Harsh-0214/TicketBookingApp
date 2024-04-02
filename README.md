@@ -2,14 +2,19 @@
 
 **Group Members:**
 
-- Jason Manarroo 100825106
-- Jordan Hagedorn 100828122
-- John Howe 100785128
-- William Zdenek Chamberlain 100846922
-- Trent Jordan 100831853
+- Harsh Tamakuwala 100824220 
+- David Hanna 100828635
+- Hasan Khan 100820450
+- Mostafa Abedi 100787034
+- Daniel Amasowomwan 100787640
+
+
+**Instructions**
+
+Run Dev-Mode Application: `mvn test spring-boot:run`
 
 ---
 
-Run Dev-Mode Application: `mvn test spring-boot:run`
+Run on: `localhost:8080`
 
 

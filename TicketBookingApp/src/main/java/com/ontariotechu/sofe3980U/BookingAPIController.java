@@ -87,7 +87,7 @@ public class BookingAPIController {
 
         }
 
-        // >>>>>>>> Session Wrapping for JSON and UUID
+        // Session Wrapping for JSON and UUID
 
         MemoryStore memoryStore = MemoryStore.getInstance(); // get singleton inst
 

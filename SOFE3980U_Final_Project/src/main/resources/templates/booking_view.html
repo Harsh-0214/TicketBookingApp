@@ -1,0 +1,572 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Flight Booking System</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/css/bootstrap-icons.css">
+    <!-- Bootstrap DatePicker CSS -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+</head>
+
+<style>
+    .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .btn-info {
+        margin-left: auto;
+        /* This might be optional depending on your setup */
+    }
+
+    .custom-control-input:checked~.custom-control-label::before {
+        color: #fff;
+        border-color: #dd5500;
+        background-color: #e28743;
+    }
+</style>
+
+<body>
+
+    <!-- PAGE HEADER -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">SOFE 3980U | Ticket Booking Application</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link" href="bookings">Bookings</a>
+                </li>
+            </ul>
+            <!-- Adjusted Toggle Switches Start Here -->
+            <form class="form-inline my-2 my-lg-0">
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="dateFormatSwitch">
+                    <label class="custom-control-label text-white" for="dateFormatSwitch" style="cursor: pointer;">24H
+                        Format</label>
+                </div>
+                <div class="custom-control custom-switch ml-3">
+                    <input type="checkbox" class="custom-control-input" id="directFlightsSwitch">
+                    <label class="custom-control-label text-white" for="directFlightsSwitch"
+                        style="cursor: pointer;">Prioritize Direct Flights</label>
+                </div>
+            </form>
+            <!-- Adjusted Toggle Switches End Here -->
+        </div>
+    </nav>
+
+
+    <div class="container mt-5">
+        <form th:action="@{/search_flights}" method="post">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <!-- String departureDate -->
+                        <label for="departureDate">Departure Date</label>
+                        <input type="text" class="form-control datepicker" id="departureDate" name="departureDate">
+                    </div>
+
+
+                    <!-- ---------------- DEPARTURE AIRPORT ----------------------- -->
+                    <div class="form-group">
+                        <!-- Int departureAirport -->
+                        <label for="departureAirport">Departure Airport</label>
+                        <select class="form-control" id="departureAirport" name="departureAirport">
+                            <option value="">Select an Airport</option>
+                            <option th:each="airport : ${airports}" th:value="${airport.ID}" th:text="${airport.name}">
+                            </option>
+                        </select>
+                    </div>
+
+
+                </div>
+                <div class="col-md-6">
+
+                    <!-- ---------------- ARRIVAl AIRPORT ----------------------- -->
+                    <div class="form-group">
+                        <label for="arrivalAirport">Arrival Airport</label>
+                        <select class="form-control" id="arrivalAirport" name="arrivalAirport">
+                            <option value="">Select an Airport</option>
+                            <option th:each="airport : ${airports}" th:value="${airport.ID}" th:text="${airport.name}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="roundTrip">
+                        <label class="form-check-label" for="roundTrip">Round Trip</label>
+                    </div>
+                    <div class="form-group returnDateGroup" style="display: none;">
+                        <label for="returnDate">Return Date</label>
+                        <input type="text" class="form-control datepicker" id="returnDate" name="returnDate">
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Search Flights</button>
+
+            <br />
+            <br />
+            <!-- searchFlightErrorMsg -->
+            <div class="alert alert-danger" role="alert" id="searchFlightErrorMsg">
+                This is a danger alert—check it out!
+            </div>
+
+        </form>
+
+        <!--* ################################################### FLIGHT RESULTS ################################################### -->
+
+        <h3 class="avail_status"></h3>
+
+        <div class="container avail_bookings"></div>
+
+
+    </div>
+
+    <!-- jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap DatePicker JS -->
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+    <script>
+
+        // Helpers:
+
+        function formatTime(isMilitaryFormat, hour, minute) {
+            let formattedTime = "";
+
+            if (isMilitaryFormat) {
+                // Format in 24-hour format
+                formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            } else {
+                // Convert to 12-hour AM/PM format
+                const suffix = hour >= 12 ? 'PM' : 'AM';
+                hour = hour % 12;
+                hour = hour ? hour : 12; // the hour '0' should be '12'
+                formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${suffix}`;
+            }
+
+            if (formattedTime.startsWith("0")) {
+                formattedTime = formattedTime.substring(1);
+            }
+
+            return formattedTime;
+        }
+
+        // Calculate total flight time in hours
+
+        function calculateTotalFlightTime(booking) {
+            let totalFlightTime = 0;
+
+            booking.forEach(flight => {
+                // Extract departure and arrival times
+                const departHour = flight.departDate.DayTime.hour;
+                const departMinute = flight.departDate.DayTime.minute;
+
+                const arrivalHour = flight.arrivalDate.DayTime.hour;
+                const arrivalMinute = flight.arrivalDate.DayTime.minute;
+
+                // Calculate departure and arrival times in minutes
+                const departTimeInMinutes = departHour * 60 + departMinute;
+                const arrivalTimeInMinutes = arrivalHour * 60 + arrivalMinute;
+
+                // Calculate flight time in minutes
+                let flightTimeInMinutes = arrivalTimeInMinutes - departTimeInMinutes;
+
+                // // Adjust for day change if arrival is on the next day
+                // if (flightTimeInMinutes < 0) {
+                //     flightTimeInMinutes += 24 * 60;
+                // }
+
+                // Convert flight time back to hours
+                const flightTimeInHours = flightTimeInMinutes / 60;
+
+                // Sum up the total flight time
+                totalFlightTime += flightTimeInHours;
+            });
+
+            return totalFlightTime;
+        }
+
+        // Function to format flight details
+        const formatFlightDetails = (flight, prefix) => {
+
+            console.log(flight);
+
+        return `
+            <strong>Flight ${prefix}:</strong> <br>
+            <span>Departure: ${flight.start.name}</span> <br>
+            <span>Arrival: ${flight.destination.name}</span> <br>
+            <span>Departure Time: 
+            ${formatTime(timeDisplayFormatSwitch.checked, flight.departDate.DayTime.hour, flight.departDate.DayTime.minute)}</span> <br>
+            <span>Arrival Time: 
+            ${formatTime(timeDisplayFormatSwitch.checked, flight.arrivalDate.DayTime.hour, flight.arrivalDate.DayTime.minute)}</span>
+        `;
+        };
+
+
+        // PRIORITIZE DIRECT FLIGHTS HELPER:
+        // SORTED BY: Total num of Inbound and Outbound flights
+
+        function sortBookingsByTotalFlights(bookingsArray) {
+            return bookingsArray.sort((a, b) => {
+                // Calculate total flights for booking 'a'
+                const totalFlightsA = (a.inBound ? a.inBound.length : 0) + (a.outBound ? a.outBound.length : 0);
+                // Calculate total flights for booking 'b'
+                const totalFlightsB = (b.inBound ? b.inBound.length : 0) + (b.outBound ? b.outBound.length : 0);
+                // Compare the totals to determine the sort order
+                return totalFlightsA - totalFlightsB;
+            });
+        }
+
+        // --------------------------------------------------------------------------------------------------------------------------------
+
+
+        // MENU BOOLEANS:
+
+        // Selector for the date format switch (true for 24H format, false for 12H format)
+        const timeDisplayFormatSwitch = document.querySelector('#dateFormatSwitch');
+
+        // Selector for the direct flights switch (true for prioritizing direct flights, false otherwise)
+        const directFlightsSwitch = document.querySelector('#directFlightsSwitch');
+
+        // Log the initial states
+        console.log('Date Format 24H:', timeDisplayFormatSwitch.checked);
+        console.log('Prioritize Direct Flights:', directFlightsSwitch.checked);
+
+        // Event listener for the date format switch
+        timeDisplayFormatSwitch.addEventListener('change', () => {
+            buildBookingListing(BROWSE_BOOKINGS_OBJECT["bookings"]);
+        });
+
+        // Event listener for the direct flights switch
+        directFlightsSwitch.addEventListener('change', () => {
+
+            if(directFlightsSwitch.checked) {
+                const bookings = sortBookingsByTotalFlights([...BROWSE_BOOKINGS_OBJECT["bookings"]]);
+                buildBookingListing(bookings);
+            } else {
+                buildBookingListing(BROWSE_BOOKINGS_OBJECT["bookings"]);
+            }
+            
+            console.log('Prioritize Direct Flights Switch:', directFlightsSwitch.checked);
+        });
+
+
+        // ICON DEFINITIONS;
+
+        const ICON_ONE_WAY = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:25px; margin-right:5px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                                  </svg>`;
+
+        const ICON_ROUND_TRIP = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:25px; margin-right:5px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                                  </svg>`;
+
+        let BROWSE_BOOKINGS_OBJECT = null;
+
+        function buildBookingListing(bookings) {
+            const parsedBookings = bookings;
+
+            //Availablity Status for Bookings HTML element
+            let availStatus = document.querySelector(".avail_status"); //Available Bookings Status message
+            let container = document.querySelector(".avail_bookings"); //Available Bookings Container
+            container.innerHTML = "";
+
+
+            if (parsedBookings.length == 0) {
+                availStatus.innerHTML = `No Bookings Found...`;
+                console.error("No bookings found");
+                return;
+            }
+
+            //* Assertions for empty output passed, bookings exist at this point forsure
+
+            availStatus.innerHTML = `Available Bookings: (${parsedBookings.length})`;
+
+            parsedBookings.forEach((booking, booking_IDX) => {
+                let cardMain = document.createElement("div");
+                cardMain.classList.add("card");
+
+                let cardHeader = document.createElement("div");
+                cardHeader.classList.add("card-header");
+                cardHeader.style.display = "flex"; // Use flexbox
+                cardHeader.style.alignItems = "center"; // Center items vertically
+                cardHeader.style.justifyContent = "space-between"; // Space between items
+
+
+                // Determine if it's a one-way or round trip based on the inBound array length
+                let tripType = booking.inBound.length > 0 ? 'Round Trip' : 'One Way Trip';
+                let iconHTML = tripType === 'One Way Trip' ? ICON_ONE_WAY : ICON_ROUND_TRIP;
+
+                // Create an icon div and insert the appropriate SVG HTML
+                let icon = document.createElement("div");
+                icon.innerHTML = iconHTML + tripType;
+                cardHeader.appendChild(icon);
+
+                //* BOOKING Submission here HERE -------------------------------------
+
+                let bookNowBtn = document.createElement("button");
+                bookNowBtn.classList.add("btn", "btn-info");
+                bookNowBtn.textContent = "Book Now";
+
+
+                let confirmBtn = document.createElement("button");
+                confirmBtn.classList.add("btn", "btn-success");
+                confirmBtn.textContent = "Confirm Booking";
+
+                //Confirm Booking seciton
+
+                let confirmBookingSection = document.createElement("div");
+                confirmBookingSection.style.display = "flex";
+
+                let inputName = document.createElement("input");
+                inputName.id = "passengerName";
+                inputName.type = "text";
+                inputName.placeholder = "Enter Passenger Name";
+
+                //Add more bootstrap classes for this:
+                inputName.classList.add("form-control-lg");
+                inputName.style.marginRight = "10px";
+
+                confirmBookingSection.appendChild(inputName);
+                confirmBookingSection.appendChild(confirmBtn);
+
+
+                bookNowBtn.onclick = function () {
+                    if (bookNowBtn.textContent === "Book Now") { //Initiate Booking
+
+                        bookNowBtn.classList.add("btn-danger");
+                        bookNowBtn.classList.remove("btn-info");
+
+                        // Add the confirm booking section
+                        cardHeader.appendChild(confirmBookingSection);
+
+
+                        bookNowBtn.textContent = "Cancel";
+
+                    } else { //Cancel Booking
+                        bookNowBtn.classList.add("btn-info");
+                        bookNowBtn.classList.remove("btn-danger");
+
+                        cardHeader.removeChild(confirmBookingSection);
+
+                        bookNowBtn.textContent = "Book Now";
+                    }
+                }
+
+
+
+                confirmBtn.onclick = function () {
+                    let UUID = JSON.parse(localStorage.getItem('uuid'));
+
+                    const passengerName = document.getElementById("passengerName").value;
+
+                    if (passengerName.length < 1) {
+                        alert("Please enter a valid passenger name.");
+                        return;
+                    }
+
+                    let bookingDTO = {
+                        userUUID: UUID,
+                        userName: passengerName,
+                        bookingUUID: booking.uuid
+                    };
+
+                    // AJAX call to the Spring Boot controller
+                    $.ajax({
+                        type: 'POST',
+                        url: '/submit_booking', // Update this URL if your API endpoint is different
+                        contentType: 'application/json',
+                        data: JSON.stringify(bookingDTO),
+                        statusCode: {
+                            200: function (response) {
+                                // Handle 200 OK
+                                console.log('Booking Success:', response);
+
+                                cardHeader.removeChild(confirmBookingSection);
+                                bookNowBtn.textContent = "Booked for " + passengerName;
+                                bookNowBtn.classList.remove("btn-danger");
+                                bookNowBtn.classList.add("btn-secondary");
+                                bookNowBtn.disabled = true;
+
+                            },
+                            400: function (error) {
+                                // Handle 400 Bad Request
+                                console.log('Booking Error:', error);
+                                alert('Booking Error: ' + error.responseText);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // Handle any other errors here
+                            console.log('Booking Error:', error);
+                            alert('Booking Error: ' + error);
+                        }
+                    });
+                };
+
+                cardHeader.appendChild(bookNowBtn); //Append the Book Now button
+
+                cardMain.appendChild(cardHeader); //Append the card header to the main card
+
+                // -----------------[ CARD BODY ]--------------------
+
+
+
+
+                // Create card body and populate with booking details
+                let cardBody = document.createElement("div");
+                cardBody.classList.add("card-body");
+
+                let cardTitle = document.createElement("h4");
+                cardTitle.classList.add("card-title");
+                cardTitle.innerHTML = `> Outbound Flight(s): ${booking.verboseOutDateStr}`;
+                cardBody.appendChild(cardTitle);
+
+
+
+                // Append flight details for outbound and inbound (if exists)
+                let cardText = document.createElement("p");
+                cardText.classList.add("card-text");
+
+                booking.outBound.forEach((flight, index) => {
+
+                    cardText.innerHTML += formatFlightDetails(flight, `Leg ${index + 1}`) + (index < booking.outBound.length - 1 ? '<hr>' : '');
+                });
+
+                console.log("--------------");
+
+                cardText.innerHTML += `<hr><strong>Total Duration:</strong> ${calculateTotalFlightTime(booking.outBound)} hours`;
+
+                if (booking.inBound.length > 0) {
+
+                    let cardTitleIn = document.createElement("h4");
+                    cardTitleIn.classList.add("card-title");
+                    cardTitleIn.innerHTML = `< Inbound Flight(s): ${booking.verboseInDateStr}`;
+
+                    cardText.innerHTML += '<hr>';
+
+                    cardText.appendChild(cardTitleIn);
+                    booking.inBound.forEach((flight, index) => {
+                        cardText.innerHTML += formatFlightDetails(flight, `Leg ${index + 1}`) + (index < booking.inBound.length - 1 ? '<hr>' : '');
+                    });
+
+                    cardText.innerHTML += `<hr><strong>Total Duration:</strong> ${calculateTotalFlightTime(booking.inBound)} hours`;
+                }
+
+                // Append UUID
+                container.append(document.createElement("br"));
+                //cardText.innerHTML += `<strong>Booking ID:</strong> <span>${booking.uuid}</span>`;
+
+                cardBody.appendChild(cardText);
+                cardMain.appendChild(cardBody);
+
+                container.append(document.createElement("br"));
+                container.appendChild(cardMain);
+            });
+        }
+
+
+
+        let SearchFlight_ERROR_BOX = document.getElementById("searchFlightErrorMsg");
+        SearchFlight_ERROR_BOX.style.visibility = "hidden";
+
+        $(document).ready(function () {
+            $('.datepicker').datepicker();
+
+            $('#roundTrip').change(function () {
+                if (this.checked) {
+                    $('.returnDateGroup').show();
+                } else {
+                    $('.returnDateGroup').hide();
+                }
+            });
+
+            //* ---- Override the form submission with AJAX via jQuery ----
+
+            $('form').submit(function (e) {
+                // Prevent the default form submission
+                e.preventDefault();
+
+                console.log("Form Submitted");
+
+                const myUUID = JSON.parse(localStorage.getItem('uuid'));
+                console.log("UUID:", myUUID);
+
+                // Collect form data
+                var formData = {
+                    dtoUuid: myUUID,
+                    departureDate: $('#departureDate').val(),
+                    departureAirport: $('#departureAirport').val(),
+                    arrivalAirport: $('#arrivalAirport').val(),
+                    roundTrip: $('#roundTrip').is(':checked'),
+                    returnDate: $('#roundTrip').is(':checked') ? $('#returnDate').val() : null
+                };
+
+                console.log(formData);
+                // AJAX call to the Spring Boot controller
+                $.ajax({
+                    type: 'POST',
+                    url: '/search_flights', // Update this URL if your API endpoint is different
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    statusCode: {
+                        200: function (response) {
+                            // Handle 200 OK
+
+                            BROWSE_BOOKINGS_OBJECT = JSON.parse(response);
+
+                            // build bookings to DOM
+                            buildBookingListing(BROWSE_BOOKINGS_OBJECT["bookings"]);
+
+                            // Set UUID
+                            localStorage.setItem('uuid', JSON.stringify(BROWSE_BOOKINGS_OBJECT["uuid"]));
+                            console.log('LS_UUID:', JSON.parse(localStorage.getItem('uuid')));
+
+                            // Show success message:
+                            SearchFlight_ERROR_BOX.style.visibility = "visible";
+                            SearchFlight_ERROR_BOX.innerHTML = "Success! Valid request, here are some flights..."
+                            SearchFlight_ERROR_BOX.classList.remove("alert-danger");
+                            SearchFlight_ERROR_BOX.classList.add("alert-success");
+                        },
+                        400: function (error) {
+                            // Handle 400 Bad Request
+                            SearchFlight_ERROR_BOX.style.visibility = "visible";
+                            SearchFlight_ERROR_BOX.innerHTML = "Error: " + error.responseText;
+                            SearchFlight_ERROR_BOX.classList.remove("alert-success");
+                            SearchFlight_ERROR_BOX.classList.add("alert-danger");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle any other errors here
+                        if (xhr.status !== 400) { // Avoid double handling
+                            console.log('Error:', error);
+                            SearchFlight_ERROR_BOX.style.visibility = "visible";
+                            SearchFlight_ERROR_BOX.innerHTML = "An unexpected error occurred. Please try again.";
+                            SearchFlight_ERROR_BOX.classList.remove("alert-success");
+                            SearchFlight_ERROR_BOX.classList.add("alert-danger");
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
+
+</body>
+
+</html>
